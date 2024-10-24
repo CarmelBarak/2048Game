@@ -7,6 +7,7 @@ window.onload = function () {
     setGame();
 }
 
+
 function setGame() {
     board = [
         [0,0,0,0,],
@@ -18,7 +19,7 @@ function setGame() {
     for (let r = 0; r < rows; r++){
         for(let c = 0; c < columns; c++) {
             //<div id="0-0"></div>
-            let tile = documentCreateElement("div");
+            let tile = document.createElement("div");
             tile.id = r.toString() + "-" + c.toString();
             let num = board[r][c];
             updateTile(tile, num);
@@ -43,7 +44,7 @@ function hasEmptyTile() {
 
 function setTwo () {
     if (!hasEmptyTile()) {
-        return
+        return;
     }
     
     let found = false;
@@ -54,7 +55,7 @@ function setTwo () {
 
         if (board[r][c] == 0) {
             board[r][c] = 2;
-            let tile = document.getElementById(r.toString() + "-" + c.toString)
+            let tile = document.getElementById(r.toString() + "-" + c.toString());
             tile.innerText = "2";
             tile.classList.add("x2");
             found = true;
@@ -94,7 +95,7 @@ document.addEventListener("keyup", (e) => {
 })
 
 function filterZero(row) {
-    return row.filterZero(num => num !=0); //create a new array without 0
+    return row.filter(num => num !=0); //create a new array without 0
 }
 
 function slide (row) {
