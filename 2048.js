@@ -2,11 +2,14 @@ var board;
 var score = 0;
 var rows = 4;
 var columns = 4;
+var highest_score = 0;
 
 window.onload = function () {
     setGame();
 }
 
+
+//////////////////////////game functions//////////////////////
 
 function setGame() {
     board = [
@@ -29,21 +32,59 @@ function setGame() {
 
     setTwo();
     setTwo();
+
+    playWithArrows();
 }
 
-function hasEmptyTile() {
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < columns; c++) {
-            if (board[r][c] == 0) {
-                return true;
-            }
+function restartGame() {
+    if (score > highest_score){
+        highest_score = score;
+    }
+    
+    score = 0;
+    document.getElementById("score").innerText = score;
+    document.getElementById("highest_score").innerText = highest_score;
+
+    for (let r = 0; r < rows; r++){
+        for(let c = 0; c < columns; c++) {   
+            board[r][c] = 0; 
+            let tile = document.getElementById(r.toString() + "-" + c.toString());
+            let num = board[r][c];
+            updateTile (tile, num);
         }
     }
-    return false;
+
+    setTwo();
+    setTwo();
 }
 
+function playWithArrows() {
+    document.addEventListener("keyup", (e) => {
+        if (e.code == "ArrowLeft") {
+            slideLeft();
+            // continueGame();
+            }
+        else if (e.code == "ArrowRight") {
+            slideRight();
+            // continueGame();
+        }
+        else if (e.code == "ArrowUp") {
+            slideUp();
+            // continueGame();
+        }
+        else if (e.code == "ArrowDown") {
+            slideDown();
+            // continueGame();
+        }
+        continueGame();
+        document.getElementById("score").innerText = score;
+    }
+)};
+
+/////////////////base functions (setTwo, boardIsFull, updatTile)//////////////////////////
+
 function setTwo () {
-    if (!hasEmptyTile()) {
+    if (boardIsFull()) {
         return;
     }
     
@@ -64,6 +105,17 @@ function setTwo () {
 
 }
 
+function boardIsFull(){
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns; c++) {
+            if (board[r][c] == 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 function updateTile(tile, num) {
     tile.innerText = "";
     tile.classList.value = ""; //clear the classList
@@ -74,25 +126,8 @@ function updateTile(tile, num) {
     }
 }
 
-document.addEventListener("keyup", (e) => {
-    if (e.code == "ArrowLeft") {
-        slideLeft();
-        setTwo();
-    }
-    else if (e.code == "ArrowRight") {
-        slideRight();
-        setTwo();
-    }
-    else if (e.code == "ArrowUp") {
-        slideUp();
-        setTwo();
-    }
-    else if (e.code == "ArrowDown") {
-        slideDown();
-        setTwo();
-    }
-    document.getElementById("score").innerText = score;
-})
+
+//////////////////////////slide functions/////////////////////////
 
 function filterZero(row) {
     return row.filter(num => num !=0); //create a new array without 0
@@ -119,7 +154,7 @@ function slide (row) {
         row.push(0);
     } // [4,2,0,0]
 
-    return row
+    return row;
 
 }
 
@@ -161,14 +196,8 @@ function slideUp() {
     for (let c = 0; c < columns; c++){ 
         let row = [board[0][c], board[1][c], board[2][c], board[3][c]] //convert column into a row
         row = slide(row);
-
-        //put the values of to row back to the coloumn
-        // board[0][c] = row[0];
-        // board[1][c] = row[1];
-        // board[2][c] = row[2];
-        // board[3][c] = row[3];
-
-         //update the html
+         
+        //update the html
          for (let r = 0; r < rows; r++) {
             board[r][c] = row[r]; //put the value in more elegant way :)
             let tile = document.getElementById(r.toString() + "-" + c.toString());
@@ -187,12 +216,6 @@ function slideDown() {
         row = slide(row);
         row.reverse(); //reversing again
 
-        //put the values of to row back to the coloumn
-        // board[0][c] = row[0];
-        // board[1][c] = row[1];
-        // board[2][c] = row[2];
-        // board[3][c] = row[3];
-
          //update the html
          for (let r = 0; r < rows; r++) {
             board[r][c] = row[r]; //put the value in more elegant way :)
@@ -202,3 +225,82 @@ function slideDown() {
         }
     }
 }
+
+////////////////// continueGame and its functions/////////////////
+
+function continueGame(){
+    //check if game is overed. if dont - continues the game by setting 2
+    if (isWin()){
+        if (confirm("Yow Win! press 'אישור' to play again")){
+            restartGame();
+        } else {
+            alert("Thank you for playing, Champion :)")
+        }
+    }else if (isGameOver()){
+        if (confirm("Game over! press 'אישור' to play again")){
+            restartGame();
+        } else {
+            alert("Thank you for playing")
+        }
+    } else {
+        setTwo();
+    }
+}
+
+function isGameOver(){
+    if (!isAvailableMove()){
+        return true;
+    }
+    return false;
+}
+
+function isAvailableMove(){
+    //check if there is any Available move on the board
+    if (boardIsFull()){
+        for (let r = 0; r < rows; r++){
+            if(isAvailableMoveRow(r)){
+                return true;
+        }
+
+        for (let c = 0; c < columns; c++){
+            if(isAvailableMoveCol(c)){
+                return true;
+            }
+        }
+        return false;
+        }
+    }
+    return true;
+}
+
+function isAvailableMoveRow(row_num){
+    let row_check = board[row_num];
+    return(hasAdjacentDuplicates(row_check));
+}
+
+function isAvailableMoveCol(col_num){
+    //Get a number, create an array of this column, and use hasAdjacentDuplicates()
+    let col_check = [board[0][col_num], board[1][col_num], board[2][col_num], board[3][col_num]] //convert column into a row 
+    return(hasAdjacentDuplicates(col_check));
+}
+
+function hasAdjacentDuplicates(arr){
+    for (let i = 0; i < arr.length ; i++){
+        if (arr[i] == arr[i+1]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isWin(){
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns; c++) {
+            if (board[r][c] == 2048) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
